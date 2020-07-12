@@ -1,0 +1,59 @@
+#CREATING EFS PROVISIONER
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: efs-provisioner
+spec:
+  selector:
+    matchLabels:
+      app: efs-provisioner
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: efs-provisioner
+    spec:
+      containers:
+        - name: efs-provisioner
+          image: quay.io/external_storage/efs-provisioner:v0.1.0
+          env:
+            - name: FILE_SYSTEM_ID
+              value: fs-4d92189c
+            - name: AWS_REGION
+              value: ap-south-1
+            - name: PROVISIONER_NAME
+              value: gau-prov/aws-efs
+          volumeMounts:
+            - name: pv-volume
+              mountPath: /persistentvolumes
+      volumes:
+        - name: pv-volume
+          nfs:
+            server: fs-4d92189c.efs.ap-south-1.amazonaws.com
+            path: /
+---
+#CLUSTER ROLE BINDING
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: nfs-provisioner-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: drupal-mysql
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+#CREATING STORAGE CLASS
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: aws-efs
+provisioner: gau-prov/aws-efs

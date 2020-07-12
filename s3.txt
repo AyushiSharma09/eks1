@@ -1,0 +1,28 @@
+#CREATING PVC FOR DRUPAL AND MYSQL
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-drupal
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-mysql
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "aws-efs"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+       
+      storage: 10Gi
